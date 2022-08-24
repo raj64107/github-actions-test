@@ -81,7 +81,7 @@ jobs:
           - name: Delete Container Web
             run: |
                 AUTH_HEADER="Authorization: Bearer ${{ steps.token.outputs.ACCESS_TOKEN }}"
-                CONTAINER_WEB_NAME="process-orchestration"
+                CONTAINER_WEB_NAME="hello-world"
                 PROJECT_NAME="io-dev-test"
                 REGION="us"
                 STRASTOSPHERE_URL="https://api.live.external.byp.ai/geographies/$REGION/projects/$PROJECT_NAME/resources/container-web/$CONTAINER_WEB_NAME"
@@ -97,7 +97,7 @@ jobs:
           - name: Create Container Web
             run: |
                AUTH_HEADER="Authorization: Bearer ${{ steps.token.outputs.ACCESS_TOKEN }}"
-               CONTAINER_WEB_NAME="process-orchestration"
+               CONTAINER_WEB_NAME="hello-world"
                PROJECT_NAME="io-dev-test"
                REGION="us"
                STRASTOSPHERE_URL="https://api.live.external.byp.ai/geographies/$REGION/projects/$PROJECT_NAME/resources/container-web/$CONTAINER_WEB_NAME"
