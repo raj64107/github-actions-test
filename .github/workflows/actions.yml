@@ -3,6 +3,7 @@ on : [push]
 
 env:
   SNAPSHOT_VERSION: ${{ format('1.1.{0}', github.run_number) }}
+  ACR_PATH: ${{ secrets.ACR_DEV_ENV_URL }}/hello-world
 
 jobs:
     run-shell-command:
@@ -45,16 +46,22 @@ jobs:
                 username: ${{ secrets.ACR_DEV_ENV_USERNAME }}
                 password: ${{ secrets.ACR_DEV_ENV_PASSWORD }}
 
-          - name: Build and Push Docker Image
-            uses: docker/build-push-action@v3
-            with:
-                registry:  ${{secrets.ACR_DEV_ENV_URL}}
-                dockerfile: Dockerfile
-                repository: hello-world
-                username: ${{ secrets.ACR_DEV_ENV_USERNAME }}
-                password: ${{ secrets.ACR_DEV_ENV_PASSWORD }}
-                build_args: |
-                tags: ${{ env.SNAPSHOT_VERSION }}
+          - name: Build and push Docker Image
+            run: |
+                 echo Publishing to ACR
+                 docker build . -t $ACR_PATH:$SNAPSHOT_VERSION
+                 docker push $ACR_PATH:$SNAPSHOT_VERSION    
+
+          # - name: Build and Push Docker Image
+          #   uses: docker/build-push-action@v3
+          #   with:
+          #       registry:  ${{secrets.ACR_DEV_ENV_URL}}
+          #       dockerfile: Dockerfile
+          #       repository: hello-world
+          #       username: ${{ secrets.ACR_DEV_ENV_USERNAME }}
+          #       password: ${{ secrets.ACR_DEV_ENV_PASSWORD }}
+          #       build_args: |
+          #       tags: ${{ env.SNAPSHOT_VERSION }}
 
 
 
