@@ -46,23 +46,174 @@ jobs:
                 username: ${{ secrets.ACR_DEV_ENV_USERNAME }}
                 password: ${{ secrets.ACR_DEV_ENV_PASSWORD }}
 
-          # - name: Build and push Docker Image
-          #   run: |
-          #        echo Publishing to ACR
-          #        ls
-          #        pwd
-          #        docker build . -t $ACR_PATH:$SNAPSHOT_VERSION 
-          #        docker push $ACR_PATH:$SNAPSHOT_VERSION    
+          - name: Build and push Docker Image
+            run: |
+                 echo Publishing to ACR
+                 ls
+                 pwd
+                 docker build . -t $ACR_PATH:$SNAPSHOT_VERSION 
+                 docker push $ACR_PATH:$SNAPSHOT_VERSION    
 
-          - name: Build and Push Docker Image
-            uses: docker/build-push-action@v3
-            with:
-                registry:  ${{secrets.ACR_DEV_ENV_URL}}
-                repository: hello-world
-                username: ${{ secrets.ACR_DEV_ENV_USERNAME }}
-                password: ${{ secrets.ACR_DEV_ENV_PASSWORD }}
-                build_args: |
-                tags: ${{ env.ACR_PATH }}:${{env.SNAPSHOT_VERSION}}
+          # - name: Build and Push Docker Image
+          #   uses: docker/build-push-action@v3
+          #   with:
+          #       registry:  ${{secrets.ACR_DEV_ENV_URL}}
+          #       repository: hello-world
+          #       username: ${{ secrets.ACR_DEV_ENV_USERNAME }}
+          #       password: ${{ secrets.ACR_DEV_ENV_PASSWORD }}
+          #       build_args: |
+          #       tags: ${{ env.ACR_PATH }}:${{env.SNAPSHOT_VERSION}}
+
+
+          - name: Get Token
+            env:
+                ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
+            run: |
+                python -m pip install --upgrade pip
+                pip install requests-oauthlib
+                pip install Authlib
+                echo ::set-output name=ACCESS_TOKEN::$(python -c 'from authlib.integrations.requests_client import OAuth2Session;
+                session = OAuth2Session("${{ secrets.CLIENT_ID }}", "${{ secrets.CLIENT_SECRET }}")
+                session.fetch_token("https://login.live.external.byp.ai/realms/Stratosphere/protocol/openid-connect/token")
+                print(session.token["access_token"])')
+            id: token
+
+          - name: Delete Container Web
+            run: |
+                AUTH_HEADER="Authorization: Bearer ${{ steps.token.outputs.ACCESS_TOKEN }}"
+                CONTAINER_WEB_NAME="process-orchestration"
+                PROJECT_NAME="io-dev-test"
+                REGION="us"
+                STRASTOSPHERE_URL="https://api.live.external.byp.ai/geographies/$REGION/projects/$PROJECT_NAME/resources/container-web/$CONTAINER_WEB_NAME"
+                curl --location --request DELETE $STRASTOSPHERE_URL \
+                          --header "$AUTH_HEADER" \
+                          --header 'Content-Type: application/json' \
+                          --data-raw "$PAYLOAD"
+
+          - name: Wait For Container To Delete
+            run: sleep 30s
+            shell: bash        
+
+          - name: Create Container Web
+            run: |
+               AUTH_HEADER="Authorization: Bearer ${{ steps.token.outputs.ACCESS_TOKEN }}"
+               CONTAINER_WEB_NAME="process-orchestration"
+               PROJECT_NAME="io-dev-test"
+               REGION="us"
+               STRASTOSPHERE_URL="https://api.live.external.byp.ai/geographies/$REGION/projects/$PROJECT_NAME/resources/container-web/$CONTAINER_WEB_NAME"
+               PAYLOAD='{
+                     "spec": {
+                       "liveness_probe": {
+                         "failure_threshold": 3,
+                         "initial_delay_seconds": 0,
+                         "period_seconds": 10,
+                         "path": "/actuator/health"
+                       },
+                       "resources": {
+                         "cpu": 0.5,
+                         "memory_mb": 8096,
+                         "quality_of_service": "best-effort"
+                       },
+                       "autoscaling": {
+                         "min_replicas": 1,
+                         "max_replicas": 1
+                       },
+                       "authentication": {
+                         "enabled": false
+                       },
+                       "http_requests": {
+                         "timeout_seconds": 30
+                       },
+                       "files": {
+                         "application.cfg": "key1=value1\nkey2=value2",
+                         "config.json": "{\"some\": \"value\"}"
+                       },
+                       "enabled": true,
+                       "image": "${{ env.ACR_PATH }}:${{ env.SNAPSHOT_VERSION }}",
+                       "secrets": {
+                           "key_vaults": [
+                             {
+                               "name": "key-vault",
+                               "secrets": [
+                                 {
+                                   "name": "mysql-host",
+                                   "environment_variable": "mysql_host"
+                                 },
+                                 {
+                                   "name": "mysql-port",
+                                   "environment_variable": "mysql_port"
+                                 },
+                                 {
+                                   "name": "mysql-database",
+                                   "environment_variable": "mysql_database"
+                                 },
+                                {
+                                   "name": "mysql-root-password",
+                                   "environment_variable": "mysql_root_password"
+                                 },
+                                 {
+                                   "name": "mysql-user",
+                                   "environment_variable": "mysql_user"
+                                 },
+                                 {
+                                    "name": "actionitemService-Url",
+                                    "environment_variable": "actionitemService_Url"
+                                 },
+                                 {
+                                    "name": "assumptionService-Url",
+                                    "environment_variable": "assumptionService_Url"
+                                 },
+                                 {
+                                    "name": "linksService-Url",
+                                    "environment_variable": "linksService_Url"
+                                 },
+                                 {
+                                    "name": "azure-key-vault-resource-name",
+                                    "environment_variable": "azure_key_vault_resource_name"
+                                 },
+                                  {
+                                      "name": "process-orchestration-module-id",
+                                       "environment_variable": "process_orchestration_module_id"
+                                      },
+                                      {
+                                      "name": "uiregistrationService-Url",
+                                       "environment_variable": "uiregistrationService_Url"
+                                      },
+                                      {
+                                      "name": "luiDashboardService-Url",
+                                      "environment_variable": "luiDashboardService_Url"
+                                      }
+                               ]
+                             }
+                           ],
+                           "restart_on_change": false
+                         },
+                       "network": {
+                         "access": "internal"
+                       },
+                       "observability": {
+                         "uptime": {
+                           "enabled": false
+                         },
+                         "metrics": {
+                           "path": "/metrics",
+                           "period_seconds": 30,
+                           "enabled": false
+                         },
+                         "logs": {
+                           "parse_json": false
+                         },
+                         "apm": {
+                           "enabled": false
+                         }
+                       }
+                     }
+                   }'
+               curl --location --request PUT $STRASTOSPHERE_URL \
+               --header "$AUTH_HEADER" \
+               --header 'Content-Type: application/json' \
+               --data-raw "$PAYLOAD"  
+
 
 
 
