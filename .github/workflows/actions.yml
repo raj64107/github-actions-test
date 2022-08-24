@@ -39,9 +39,10 @@ jobs:
                 password: ${{ secrets.ACR_DEV_ENV_PASSWORD }}
 
           - name: Build and Push Docker Image
-            uses: docker/build-push-action@v1.1.2
+            uses: docker/build-push-action@v2
             with:
                 registry:  ${{secrets.ACR_DEV_ENV_URL}}
+                dockerfile: Dockerfile
                 repository: hello-world
                 username: ${{ secrets.ACR_DEV_ENV_USERNAME }}
                 password: ${{ secrets.ACR_DEV_ENV_PASSWORD }}
