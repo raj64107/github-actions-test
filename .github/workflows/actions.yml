@@ -2,7 +2,7 @@ name: First action
 on : [push]
 
 env:
-  SNAPSHOT_VERSION: ${{ format('{0}-SNAPSHOT', github.run_number) }}
+  SNAPSHOT_VERSION: ${{ format('1.1.{0}', github.run_number) }}
 
 jobs:
     run-shell-command:
