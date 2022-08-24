@@ -7,3 +7,23 @@ jobs:
         steps:
           - name: list of directory
             run: ls
+    build:
+        runs-on: ubuntu-latest
+
+        steps:
+          - name: checkout
+            uses: actions/checkout@v2
+            with:
+              fetch-depth: 0
+
+          - name: Set up JDK
+            uses: actions/setup-java@v1
+            with:
+              java-version: 8
+
+          - name: Build with Gradle
+            id: build
+            run: ./gradlew build
+
+
+
