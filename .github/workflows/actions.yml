@@ -130,64 +130,6 @@ jobs:
                        },
                        "enabled": true,
                        "image": "${{ env.ACR_PATH }}:${{ env.SNAPSHOT_VERSION }}",
-                       "secrets": {
-                           "key_vaults": [
-                             {
-                               "name": "key-vault",
-                               "secrets": [
-                                 {
-                                   "name": "mysql-host",
-                                   "environment_variable": "mysql_host"
-                                 },
-                                 {
-                                   "name": "mysql-port",
-                                   "environment_variable": "mysql_port"
-                                 },
-                                 {
-                                   "name": "mysql-database",
-                                   "environment_variable": "mysql_database"
-                                 },
-                                {
-                                   "name": "mysql-root-password",
-                                   "environment_variable": "mysql_root_password"
-                                 },
-                                 {
-                                   "name": "mysql-user",
-                                   "environment_variable": "mysql_user"
-                                 },
-                                 {
-                                    "name": "actionitemService-Url",
-                                    "environment_variable": "actionitemService_Url"
-                                 },
-                                 {
-                                    "name": "assumptionService-Url",
-                                    "environment_variable": "assumptionService_Url"
-                                 },
-                                 {
-                                    "name": "linksService-Url",
-                                    "environment_variable": "linksService_Url"
-                                 },
-                                 {
-                                    "name": "azure-key-vault-resource-name",
-                                    "environment_variable": "azure_key_vault_resource_name"
-                                 },
-                                  {
-                                      "name": "process-orchestration-module-id",
-                                       "environment_variable": "process_orchestration_module_id"
-                                      },
-                                      {
-                                      "name": "uiregistrationService-Url",
-                                       "environment_variable": "uiregistrationService_Url"
-                                      },
-                                      {
-                                      "name": "luiDashboardService-Url",
-                                      "environment_variable": "luiDashboardService_Url"
-                                      }
-                               ]
-                             }
-                           ],
-                           "restart_on_change": false
-                         },
                        "network": {
                          "access": "internal"
                        },
