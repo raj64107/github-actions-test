@@ -9,7 +9,6 @@ ENV JAVA_HOME /usr/local/openjdk-11
 
 USER 1100
 
-ARG RELEASE_VERSION=*
 WORKDIR /home/stratosphere
 ARG JAR_FILE=build/libs/hello-world-0.0.1-SNAPSHOT.jar
 COPY ${JAR_FILE} app.jar
