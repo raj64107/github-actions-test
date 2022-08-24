@@ -28,5 +28,12 @@ jobs:
             id: build
             run: ./gradlew build
 
+          - name: Docker login
+            uses: azure/docker-login@v1
+            with:
+                login-server: ${{secrets.ACR_DEV_ENV_URL}}
+                username: ${{ secrets.ACR_DEV_ENV_USERNAME }}
+                password: ${{ secrets.ACR_DEV_ENV_PASSWORD }}
+
 
 
