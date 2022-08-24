@@ -49,6 +49,8 @@ jobs:
           - name: Build and push Docker Image
             run: |
                  echo Publishing to ACR
+                 ls
+                 pwd
                  docker build . -t $ACR_PATH:$SNAPSHOT_VERSION 
                  docker push $ACR_PATH:$SNAPSHOT_VERSION    
 
