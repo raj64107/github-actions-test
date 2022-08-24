@@ -1,0 +1,9 @@
+name: First action
+on : [push]
+
+jobs:
+    run-shell-command:
+        runs-on: ubuntu-latest
+        steps:
+          - name: list of directory
+            run: ls
