@@ -2,7 +2,7 @@ name: First action
 on : [push]
 
 env:
-  SNAPSHOT_VERSION: ${{ format('1.1.{0}', github.run_number) }}
+  SNAPSHOT_VERSION: ${{ format('{0}-SNAPSHOT', github.run_number) }}
   ACR_PATH: ${{ secrets.ACR_DEV_ENV_URL }}/hello-world
 
 jobs:
@@ -58,7 +58,6 @@ jobs:
             uses: docker/build-push-action@v3
             with:
                 registry:  ${{secrets.ACR_DEV_ENV_URL}}
-                dockerfile: Dockerfile
                 repository: hello-world
                 username: ${{ secrets.ACR_DEV_ENV_USERNAME }}
                 password: ${{ secrets.ACR_DEV_ENV_PASSWORD }}
