@@ -1,6 +1,9 @@
 name: First action
 on : [push]
 
+env:
+  SNAPSHOT_VERSION: ${{ format('{0}-SNAPSHOT', github.run_number) }}
+
 jobs:
     run-shell-command:
         runs-on: ubuntu-latest
@@ -34,6 +37,16 @@ jobs:
                 login-server: ${{secrets.ACR_DEV_ENV_URL}}
                 username: ${{ secrets.ACR_DEV_ENV_USERNAME }}
                 password: ${{ secrets.ACR_DEV_ENV_PASSWORD }}
+
+          - name: Build and Push Docker Image
+            uses: docker/build-push-action@v1.1.2
+            with:
+                registry:  ${{secrets.ACR_DEV_ENV_URL}}
+                repository: hello-world
+                username: ${{ secrets.ACR_DEV_ENV_USERNAME }}
+                password: ${{ secrets.ACR_DEV_ENV_PASSWORD }}
+                build_args: |
+                tags: ${{ env.SNAPSHOT_VERSION }}
 
 
 
