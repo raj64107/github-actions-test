@@ -1,0 +1,48 @@
+
+name: Infra Automation on Stratosphere
+
+on:
+  workflow_dispatch:
+    inputs:
+      projectName:
+        description: 'Stratosphere Project Name'
+        required: true
+      region:
+        description: 'Project Region'
+        required: true
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.9.0'
+
+      - name: get token
+        env:
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests-oauthlib
+          pip install Authlib
+          echo ::set-output name=ACCESS_TOKEN::$(python -c 'from authlib.integrations.requests_client import OAuth2Session;
+          session = OAuth2Session("${{ secrets.CLIENT_ID }}", "${{ secrets.CLIENT_SECRET }}")
+          session.fetch_token("https://login.live.external.byp.ai/realms/Stratosphere/protocol/openid-connect/token")
+          print(session.token["access_token"])')
+        id: token
+      - name: create internal network tunnel
+        run: |
+            AUTH_HEADER="Authorization: token ${{ steps.token.outputs.ACCESS_TOKEN }}"
+            PROJECT_NAME=${{github.event.inputs.projectName}}
+            REGION=${{github.event.inputs.region}}
+            STRASTOSPHERE_URL="https://api.live.external.byp.ai/geographies/$REGION/projects/$PROJECT_NAME/resources/internal-network-tunnel/tunnel"
+            PAYLOAD='{
+                   "spec": {
+                     "enabled": true
+                   }
+                 }'
+            curl --location --request PUT $STRASTOSPHERE_URL \
+                        --header "$AUTH_HEADER" \
+                        --header 'Content-Type: application/json' \
+                        --data-raw "$PAYLOAD"
